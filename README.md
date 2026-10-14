@@ -14,15 +14,29 @@ wisp-science        引擎层：项目 / 会话 / 子代理委派 / 技能执行
         └─ skills/  target-evaluation · variant-interpretation · 分子设计 · 成药性 · 证据综合
 ```
 
-## 技能契约三约定（v0 基石）
+## 技能契约（v0.1，规范全文见 [docs/skill-format.md](docs/skill-format.md)）
 
 | 约定 | 解决什么 | Issue |
 |---|---|---|
 | `dependsOn:` 依赖声明 | 技能横向组合，复杂技能模块化；组合发生在提示词层而非代码层 | #1 |
 | `references/` 渐进式披露 | SKILL.md 薄入口 + 深文档按需加载，控制上下文成本 | #2 |
 | `samples/` 示例输入即 schema | 测试夹具 + schema 文档 + 新手样例，一份三用 | #3 |
+| `env:` 环境声明（uv / ssh 双档） | 运行时落点显式化；ssh 档对接 delegation_policy 的 capability→主机解析 | #4 |
 
-三约定在 wisp-science 的 skill-creator 模板中已有字段位（`dependsOn` / `references` / `samples`）；本仓负责把它们升级为全库强约定 + CI 校验。
+校验工具：`python tools/validate_skills.py`（V1–V10，CI 强制门禁）。字段位在 wisp-science 的 skill-creator 模板中已存在；本仓将其升级为全库强约定。
+
+## 内容矩阵（只做药物研发相关）
+
+| 技能组 | 数量规划 | 说明 |
+|---|---|---|
+| 靶点评估链 | 4 | 靶点评级、遗传证据、可药性、竞争格局（对照 target-validation-lens 自研） |
+| 变异解读 | 3 | 查询 → 解读 → 证据单元，分层设计 |
+| SAR / 专利证据 | 3 | SAR 证据合成、专利分析 |
+| 科研产出 | 3 | 情报报告、图表质检、数据适配 |
+| 数据库包装（精选） | 4-5 | 仅药物相关公共库，优先 CC-BY 数据源 |
+| 平台技能 | 2 | workflow 使用契约、技能自述 |
+
+**范围裁剪（决策记录）**：不做单细胞分析、不做通用办公文档技能、不做通用生信库包装——能力面聚焦药物研发。
 
 ## 设计原则
 
