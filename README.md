@@ -1,37 +1,48 @@
 # wisp-drug
 
-> Drug-discovery skill suite for coding agents — Claude Code / Codex / Gemini CLI first.
+> 基于 wisp-science 的下一代药物研发平台 —— agent-native，开源优先。
 
-`wisp-drug` 是面向编码 Agent 的药物研发技能套件，起点是对 [OriBench](https://oribench.lglab.ac.cn)（临港实验室 AI 制药工作台）的逆向拆解：它用 108 个 SKILL.md 说明书替代传统集成代码，让通用编码 Agent 充当集成运行时。本项目吸收其中被验证有效的**轻量约定**，在 wisp 系列的 coding-agent-first 架构上重建，不引入 docker 私有镜像、云中继、llm-only 路由等 vendor lock-in。
+`wisp-drug` 构建在 [wisp-science](https://github.com/Yu-Qiao-sjtu/wisp-science) 引擎之上：wisp-science 提供项目 / 会话 / 子代理委派 / 技能执行的技术底座，`wisp-drug` 承载药物研发的垂直能力层——靶点评估、变异解读、分子设计、成药性、证据综合。
 
-## 核心约定（v0 基石）
+**我们的起点是 wisp-science 的 coding-agent-first 架构，不是任何闭源工作台。** 对 OriBench 等竞品的拆解只作为工程情报输入（对比计划见 [wisp-science-depmap](https://github.com/Yu-Qiao-sjtu/wisp-science-depmap)）；凡属 vendor lock-in 的部分（docker 私有镜像、llm-only 中继计费、云强制执行、身份改写营销层）一概不采用。
 
-| 约定 | 来源 | 解决什么 |
+## 平台分层
+
+```
+wisp-science        引擎层：项目 / 会话 / 子代理委派 / 技能执行循环
+   └─ wisp-drug     垂直层：药物研发技能体系 + 技能契约三约定
+        └─ skills/  target-evaluation · variant-interpretation · 分子设计 · 成药性 · 证据综合
+```
+
+## 技能契约三约定（v0 基石）
+
+| 约定 | 解决什么 | Issue |
 |---|---|---|
-| `dependsOn:` frontmatter 依赖声明 | OriBench skill contract | 技能横向组合，复杂技能模块化 |
-| `references/` 渐进式披露 | OriBench skill layout | SKILL.md 薄入口，深文档按需加载，控上下文成本 |
-| `samples/` 示例输入即 schema | OriBench 可测性设计 | 测试夹具 + schema 文档 + 新手上手，三合一 |
+| `dependsOn:` 依赖声明 | 技能横向组合，复杂技能模块化；组合发生在提示词层而非代码层 | #1 |
+| `references/` 渐进式披露 | SKILL.md 薄入口 + 深文档按需加载，控制上下文成本 | #2 |
+| `samples/` 示例输入即 schema | 测试夹具 + schema 文档 + 新手样例，一份三用 | #3 |
 
-详细规范见 Issues #1–#3。
+三约定在 wisp-science 的 skill-creator 模板中已有字段位（`dependsOn` / `references` / `samples`）；本仓负责把它们升级为全库强约定 + CI 校验。
 
 ## 设计原则
 
-1. **说明书优先于代码** —— 工具接入 = 一份 SKILL.md + 可选脚本，不写 per-tool 适配器
-2. **Agent 即运行时** —— 依赖 Claude Code / Codex 原生工具循环，不自建 agent 引擎
-3. **文件即接口** —— 工具间数据交换走 SDF/PDB/CSV 落盘，Agent 负责格式翻译
-4. **零锁定** —— 无强制云中继、无私有镜像依赖；重计算走开源工具官方渠道
+1. **说明书而非集成代码** —— 工具接入 = 一份 SKILL.md + 可选脚本，不写 per-tool 适配器
+2. **Agent 即运行时** —— 复用 Claude Code / Codex 原生执行循环，不自研 agent 引擎
+3. **文件即接口** —— 跨工具数据交换用 SDF/PDB/CSV 落盘，Agent 负责格式翻译
+4. **开源优先** —— 不依赖私有镜像或计费中继；重计算工具用开源版 + 公开权重自建
 
-## 与姊妹仓库的关系
+## 姊妹仓库
 
-- [wisp-science-depmap](https://github.com/Yu-Qiao-sjtu/wisp-science-depmap) —— 依赖组图谱方向的科学推理项目，`docs/oribench-skill-comparison-plan.md` 记录了两边技能格式的对比计划
-- 本仓库聚焦药物设计技能本体（分子生成/对接/成药性/靶点评估）
+- [wisp-science](https://github.com/Yu-Qiao-sjtu/wisp-science) —— 上游引擎（技能 / 会话 / 子代理执行底座）
+- [wisp-science-depmap](https://github.com/Yu-Qiao-sjtu/wisp-science-depmap) —— 科学侧项目：依赖组图谱驱动；`docs/oribench-skill-comparison-plan.md` 保存竞品拆解与技能格式对比计划
 
 ## Roadmap
 
-- [ ] #1 `dependsOn` 依赖声明
-- [ ] #2 `references/` 渐进式披露
-- [ ] #3 `samples/` 示例输入规范
-- [ ] 首批技能迁移（target-evaluation / variant-interpretation 方向，对位 OriBench 靶点评估与变异解读三件套）
+- [ ] #1 `dependsOn` 依赖声明 + validate 脚本
+- [ ] #2 `references/` 渐进式披露 + 行数上限校验
+- [ ] #3 `samples/` 示例输入规范 + CI smoke
+- [ ] #4 平台定位锚定（上游 wisp-science，竞品仅作情报）
+- [ ] 首批领域技能：target-evaluation / variant-interpretation（自主设计，按 wisp-science 科研路线生长）
 
 ## License
 
